@@ -1,0 +1,30 @@
+{
+  "name": "dsh-wsl-tray",
+  "version": "0.1.0",
+  "description": "DeepSeek Harness tool: generate Windows launcher scripts for dsh web in WSL.",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/173787247/dsh-wsl-tray.git"
+  },
+  "bugs": {
+    "url": "https://github.com/173787247/dsh-wsl-tray/issues"
+  },
+  "homepage": "https://github.com/173787247/dsh-wsl-tray#readme",
+  "type": "module",
+  "main": "index.js",
+  "engines": { "node": ">=18" },
+  "scripts": { "test": "node --test test/tray.test.js" },
+  "files": [
+    "index.js",
+    "lib",
+    "cordis.patch.yml",
+    "README.md",
+    "README.zh.md",
+    "LICENSE",
+    "CHANGELOG.md",
+    "CONTRIBUTING.md"
+  ],
+  "keywords": ["dsh-plugin", "deepseek-harness", "wsl", "tray"],
+  "dsh": { "bundle": { "patch": "./cordis.patch.yml" } }
+}
