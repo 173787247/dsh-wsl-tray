@@ -2,5 +2,4 @@
     - id: dsh-wsl-tray
       name: dsh-wsl-tray
       config:
-        timeoutMs: 15000
-        port: 3080
+        timeoutMs: 30000
