@@ -18,6 +18,8 @@ dsh plugin --profile web add /absolute/path/to/dsh-wsl-tray
 
 Restart `dsh web` and open a **new** session. Tool: `wsl_tray`.
 
+Set `DSH_WSL_KIT` to your kit checkout (or pass `kitPath`). Tray menu includes **Start / Restart** and **Health check** (`scripts/check-dsh-health.sh`).
+
 ## License
 
 MIT
