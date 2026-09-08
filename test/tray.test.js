@@ -8,9 +8,10 @@ describe("wsl_tray", () => {
   });
 
   it("resolves kit path from arg then env then fallback", () => {
+    const looksLike = (p, needle) => String(p).replace(/\\/g, "/").includes(needle);
     const viaArg = resolveKitPath({
       kitPath: "/kit",
-      exists: (p) => p.includes("/kit/scripts/restart-dsh-web.sh"),
+      exists: (p) => looksLike(p, "/kit/scripts/restart-dsh-web.sh"),
       candidates: [],
     });
     assert.equal(viaArg.ok, true);
@@ -18,7 +19,7 @@ describe("wsl_tray", () => {
 
     const viaEnv = resolveKitPath({
       env: { DSH_WSL_KIT: "/envkit" },
-      exists: (p) => p.includes("/envkit/scripts/restart-dsh-web.sh"),
+      exists: (p) => looksLike(p, "/envkit/scripts/restart-dsh-web.sh"),
       candidates: [],
     });
     assert.equal(viaEnv.source, "env");
@@ -32,6 +33,8 @@ describe("wsl_tray", () => {
     const ps1 = ps1Body("Ubuntu-24.04", "http://127.0.0.1:3081", kit);
     assert.match(ps1, /restart-dsh-web\.sh/);
     assert.match(ps1, /check-dsh-health\.sh/);
+    assert.match(ps1, /dsh-web-alive\.inc\.sh/);
+    assert.match(ps1, /dsh-ui-url/);
     assert.match(ps1, /Start-DshWsl/);
     assert.ok(!ps1.includes("AIFullStackDevelopment") || ps1.includes(kit));
 

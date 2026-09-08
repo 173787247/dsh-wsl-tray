@@ -1,5 +1,9 @@
 # Changelog
 
+## 0.2.3
+
+- After restart, open `/tmp/dsh-ui-url` (dsh ≥0.1.2 launch token on :3081). Copy `dsh-web-alive.inc.sh` with health/restart.
+
 ## 0.2.2
 
 - Resolve `dsh-wsl-kit` via `kitPath` / `DSH_WSL_KIT` / fallbacks (no single hardcoded Desktop path required).
