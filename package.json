@@ -1,6 +1,6 @@
 {
   "name": "dsh-wsl-tray",
-  "version": "0.2.3",
+  "version": "0.2.4",
   "description": "Install or report a Windows tray/shortcut launcher for dsh web in WSL.",
   "license": "MIT",
   "repository": {

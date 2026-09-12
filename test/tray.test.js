@@ -28,7 +28,7 @@ describe("wsl_tray", () => {
     assert.equal(miss.ok, false);
   });
 
-  it("ps1 and ahk include Health and Restart without hardcoded Desktop path only", () => {
+  it("ps1 and ahk open token URL only (never bare :3081 as fallback open)", () => {
     const kit = "/mnt/c/work/dsh-wsl-kit";
     const ps1 = ps1Body("Ubuntu-24.04", "http://127.0.0.1:3081", kit);
     assert.match(ps1, /restart-dsh-web\.sh/);
@@ -36,6 +36,9 @@ describe("wsl_tray", () => {
     assert.match(ps1, /dsh-web-alive\.inc\.sh/);
     assert.match(ps1, /dsh-ui-url/);
     assert.match(ps1, /Start-DshWsl/);
+    assert.match(ps1, /Get-DshTokenUrl/);
+    assert.match(ps1, /token=/);
+    assert.ok(!ps1.includes("Start-Process 'http://127.0.0.1:3081'"));
     assert.ok(!ps1.includes("AIFullStackDevelopment") || ps1.includes(kit));
 
     const health = healthPs1Body("Ubuntu-24.04", kit);
@@ -47,9 +50,13 @@ describe("wsl_tray", () => {
       "C:\\Users\\u\\.dsh\\tray\\start-dsh-web.ps1",
       kit,
       "C:\\Users\\u\\.dsh\\tray\\check-dsh-health.ps1",
+      "C:\\Users\\u\\.dsh\\tray\\open-dsh-ui.ps1",
     );
     assert.match(ahk, /Health check/);
     assert.match(ahk, /Restart dsh/);
+    assert.match(ahk, /open-dsh-ui\.ps1/);
+    assert.match(ahk, /token URL/);
+    assert.ok(!ahk.includes("explorer.exe http://127.0.0.1:3081"));
     assert.match(ahk, /kitPath: \/mnt\/c\/work\/dsh-wsl-kit/);
   });
 });

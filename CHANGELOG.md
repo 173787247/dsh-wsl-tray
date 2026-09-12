@@ -1,3 +1,7 @@
+## 0.2.4
+
+- Open UI only via /tmp/dsh-ui-url token; open-dsh-ui.ps1; never bare :3081.
+
 # Changelog
 
 ## 0.2.3
