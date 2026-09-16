@@ -8,11 +8,23 @@ DeepSeek Harness 插件：为跑在 WSL 里的 `dsh web` 安装或报告 **Windo
 
 [English → README.md](./README.md)
 
+## 在套件里的位置
+
+安装或报告一个打开 dsh web 界面的 Windows 托盘快捷方式。
+
+```mermaid
+flowchart LR
+  tray["Windows 托盘快捷方式"] --> relay[":3081/?token="] --> dsh["WSL 里的 dsh web"]
+```
+
+整套关系图和版本快照：[dsh-wsl-kit 中文说明](https://github.com/173787247/dsh-wsl-kit/blob/master/README.zh.md)。本插件是 **0.2.4**（full，也在 llm）。不要把那份总表抄进本 README。
+
+
 ## 兼容性
 
 | 项 | 值 |
 |----|----|
-| **插件** | `dsh-wsl-tray` **0.2.3** |
+| **插件** | `dsh-wsl-tray` **0.2.4** |
 | **最低 dsh** | ≥ **0.1.2**（Windows 中继 `:3081` 一次性 `?token=`） |
 | **最新验证** | 以 [dsh-wsl-kit 兼容性](https://github.com/173787247/dsh-wsl-kit#compatibility-2026-09) 为准（当前 **`0.1.5-rc.1`**）— 套件唯一真源 |
 | **套件档位** | `llm` / `full`（也可单独装） |
