@@ -41,22 +41,47 @@ describe("wsl_tray", () => {
     assert.ok(!ps1.includes("AIFullStackDevelopment") || ps1.includes(kit));
 
     // The command handed to bash is invoked with & and embedded in a
-    // PowerShell single-quoted string, so any single quote inside it has to be
-    // doubled. Both halves have been wrong in ways that produced no error at
-    // all: Start-Process -ArgumentList split the command on its own spaces and
-    // ran only the tail, and an unescaped quote ended the string early.
-    assert.match(ps1, /& wsl\.exe -d \$distro -- bash -lc /);
+    // PowerShell single-quoted string. Both halves have been wrong in ways that
+    // produced no error at all: Start-Process -ArgumentList split the command on
+    // its own spaces and ran only the tail, and an unescaped quote ended the
+    // string early.
     assert.ok(!ps1.includes("Start-Process wsl.exe"), "ArgumentList form splits the command");
-    for (const line of ps1.split("\n").filter((l) => l.includes("bash -lc"))) {
-      const body = line.slice(line.indexOf("bash -lc '") + "bash -lc '".length);
-      assert.match(body, /''/, `single quotes must be doubled for PowerShell: ${line}`);
-    }
+
+    // Read the bash command the way PowerShell would, and require the content to
+    // be what bash should receive.
+    //
+    // Counting quotes is not enough ('bash 'x.sh'' has an even number and is
+    // still broken) and neither is stripping the outer pair, because that broken
+    // string happens to unquote to the right text. What separates them is where
+    // the string ENDS: a lone quote closes it and the remainder is parsed as
+    // PowerShell rather than as part of the argument, so the content is
+    // truncated. Scan for the real end, then compare the content.
+    //
+    // Text after the closing quote is legitimate and does occur:
+    //   ... bash -lc 'cat /tmp/x 2>/dev/null').Trim()
+    const psSingleQuoted = (line) => {
+      const start = line.indexOf("bash -lc '");
+      assert.ok(start >= 0, `no bash -lc argument: ${line}`);
+      let i = start + "bash -lc '".length;
+      let out = "";
+      while (i < line.length) {
+        if (line[i] !== "'") { out += line[i++]; continue; }
+        if (line[i + 1] === "'") { out += "'"; i += 2; continue; }
+        return out; // lone quote: the string ends here
+      }
+      assert.fail(`unterminated PowerShell string: ${line}`);
+    };
+    const lines = ps1.split("\n").filter((l) => l.includes("bash -lc "));
+    assert.equal(lines.length, 3, "GetDshTokenUrl, Start-DshWsl, Show-DshHealth");
+    assert.equal(psSingleQuoted(lines[0]), "cat /tmp/dsh-ui-url 2>/dev/null");
+    assert.equal(psSingleQuoted(lines[1]), `bash '${kit}/scripts/restart-dsh-web.sh'`);
+    assert.equal(psSingleQuoted(lines[2]), `bash '${kit}/scripts/check-dsh-health.sh'; echo; read -n 1 -p 'Press any key...'`);
 
     // Call the kit script directly. The sed detour existed only because the
     // scripts used to be read from a CRLF checkout under /mnt/c; from the WSL
-    // clone that is unnecessary, and it carried a PATH assignment whose
-    // unquoted $PATH contained "Program Files (x86)" -- a bash syntax error
-    // that made the launcher do nothing.
+    // clone it is unnecessary, and it carried a PATH assignment whose unquoted
+    // $PATH contained "Program Files (x86)" -- a bash syntax error that made the
+    // launcher do nothing.
     assert.ok(!ps1.includes("export PATH="), "PATH is not set here any more");
     assert.ok(!ps1.includes("sed 's/"), "no CRLF stripping needed from a WSL path");
 
@@ -64,6 +89,9 @@ describe("wsl_tray", () => {
     assert.match(health, /check-dsh-health\.sh/);
     assert.match(health, /& wsl\.exe -d \$distro -- bash -lc /);
     assert.ok(!health.includes("export PATH="));
+    for (const line of health.split("\n").filter((l) => l.includes("bash -lc "))) {
+      assert.equal(psSingleQuoted(line), `bash '${kit}/scripts/check-dsh-health.sh'; echo; read -n 1 -p 'Press any key...'`);
+    }
 
     const ahk = ahkBody(
       "Ubuntu-24.04",
