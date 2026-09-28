@@ -33,7 +33,6 @@ describe("wsl_tray", () => {
     const ps1 = ps1Body("Ubuntu-24.04", "http://127.0.0.1:3081", kit);
     assert.match(ps1, /restart-dsh-web\.sh/);
     assert.match(ps1, /check-dsh-health\.sh/);
-    assert.match(ps1, /dsh-web-alive\.inc\.sh/);
     assert.match(ps1, /dsh-ui-url/);
     assert.match(ps1, /Start-DshWsl/);
     assert.match(ps1, /Get-DshTokenUrl/);
@@ -41,8 +40,30 @@ describe("wsl_tray", () => {
     assert.ok(!ps1.includes("Start-Process 'http://127.0.0.1:3081'"));
     assert.ok(!ps1.includes("AIFullStackDevelopment") || ps1.includes(kit));
 
+    // The command handed to bash is invoked with & and embedded in a
+    // PowerShell single-quoted string, so any single quote inside it has to be
+    // doubled. Both halves have been wrong in ways that produced no error at
+    // all: Start-Process -ArgumentList split the command on its own spaces and
+    // ran only the tail, and an unescaped quote ended the string early.
+    assert.match(ps1, /& wsl\.exe -d \$distro -- bash -lc /);
+    assert.ok(!ps1.includes("Start-Process wsl.exe"), "ArgumentList form splits the command");
+    for (const line of ps1.split("\n").filter((l) => l.includes("bash -lc"))) {
+      const body = line.slice(line.indexOf("bash -lc '") + "bash -lc '".length);
+      assert.match(body, /''/, `single quotes must be doubled for PowerShell: ${line}`);
+    }
+
+    // Call the kit script directly. The sed detour existed only because the
+    // scripts used to be read from a CRLF checkout under /mnt/c; from the WSL
+    // clone that is unnecessary, and it carried a PATH assignment whose
+    // unquoted $PATH contained "Program Files (x86)" -- a bash syntax error
+    // that made the launcher do nothing.
+    assert.ok(!ps1.includes("export PATH="), "PATH is not set here any more");
+    assert.ok(!ps1.includes("sed 's/"), "no CRLF stripping needed from a WSL path");
+
     const health = healthPs1Body("Ubuntu-24.04", kit);
     assert.match(health, /check-dsh-health\.sh/);
+    assert.match(health, /& wsl\.exe -d \$distro -- bash -lc /);
+    assert.ok(!health.includes("export PATH="));
 
     const ahk = ahkBody(
       "Ubuntu-24.04",
