@@ -74,7 +74,12 @@ describe("wsl_tray", () => {
     const lines = ps1.split("\n").filter((l) => l.includes("bash -lc "));
     assert.equal(lines.length, 3, "GetDshTokenUrl, Start-DshWsl, Show-DshHealth");
     assert.equal(psSingleQuoted(lines[0]), "cat /tmp/dsh-ui-url 2>/dev/null");
-    assert.equal(psSingleQuoted(lines[1]), `bash '${kit}/scripts/restart-dsh-web.sh'`);
+    // 自 c0c5278 起，Start-DshWsl 先试着用 kit 的 revive 脚本，没有再退回 restart。
+    // 两个分支都要在，缺任一个都意味着恢复路径少了一半。
+    const startCmd = psSingleQuoted(lines[1]);
+    assert.match(startCmd, /revive-dsh\.sh/, 'revive 分支应在（能修半装状态）');
+    assert.match(startCmd, /restart-dsh-web\.sh/, 'restart 兜底应在（只装了本插件的主机也要能用）');
+    assert.match(startCmd, /^if \[ -f /, '应为运行时的存在性判断，而不是无条件调用');
     assert.equal(psSingleQuoted(lines[2]), `bash '${kit}/scripts/check-dsh-health.sh'; echo; read -n 1 -p 'Press any key...'`);
 
     // Call the kit script directly. The sed detour existed only because the
