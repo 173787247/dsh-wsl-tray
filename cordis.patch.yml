@@ -1,5 +1,5 @@
 - insert:
     - id: dsh-wsl-tray
-      name: dsh-wsl-tray
+      name: dsh-wsl-tray-launcher
       config:
         timeoutMs: 30000

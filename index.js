@@ -1,7 +1,7 @@
 import { detectWsl } from "./lib/wsl-host.js";
 import * as core from "./lib/tray.js";
 
-export const name = "dsh-wsl-tray";
+export const name = "dsh-wsl-tray-launcher";
 export const inject = ["tools", "systemPrompt"];
 
 export function apply(ctx, config = {}) {
